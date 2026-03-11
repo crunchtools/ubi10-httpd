@@ -136,7 +136,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.CRUNCHTOOLS_DISPATCH_TOKEN }}
         run: |
-          for repo in ubi10-httpd-php ubi10-httpd-perl proxy; do
+          for repo in ubi10-httpd-php ubi10-httpd-perl proxy acquacotta; do
             gh api repos/crunchtools/$repo/dispatches \
               -f event_type=parent-image-updated || true
           done
