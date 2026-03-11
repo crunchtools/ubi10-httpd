@@ -74,10 +74,13 @@ done
 
 # Verify masked services
 for svc in systemd-remount-fs systemd-update-done systemd-udev-trigger; do
-    if systemctl is-enabled "$svc" 2>/dev/null | grep -q "masked"; then
+    ENABLED_STATE=$(systemctl is-enabled "${svc}.service" 2>/dev/null || true)
+    UNIT_FILE=$(systemctl show -p FragmentPath "${svc}.service" 2>/dev/null | cut -d= -f2 || true)
+    if [ "$ENABLED_STATE" = "masked" ] || [ "$UNIT_FILE" = "/dev/null" ] || \
+       readlink -f "/etc/systemd/system/${svc}.service" 2>/dev/null | grep -q "/dev/null"; then
         pass "inherited mask: $svc"
     else
-        fail "inherited mask missing: $svc"
+        fail "inherited mask missing: $svc (is-enabled=$ENABLED_STATE, unit=$UNIT_FILE)"
     fi
 done
 
