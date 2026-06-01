@@ -11,4 +11,7 @@ RUN dnf install -y \
 # Enable httpd
 RUN systemctl enable httpd
 
+# CrunchTools: self-heal httpd on failure via systemd drop-in.
+COPY config/httpd-restart.conf /etc/systemd/system/httpd.service.d/restart.conf
+
 EXPOSE 80
