@@ -1,64 +1,51 @@
 # ubi10-httpd Constitution
 
-> **Version:** 1.0.1
+> **Version:** 1.1.0
 > **Ratified:** 2026-03-10
+> **Amended:** 2026-10-02
 > **Status:** Active
-> **Inherits:** [crunchtools/constitution](https://github.com/crunchtools/constitution) v1.17.0
+> **Inherits:** [crunchtools/constitution](https://github.com/crunchtools/constitution) v1.18.0
 > **Profile:** Container Image
 
-UBI 10 Apache httpd layer. Inherits troubleshooting tools and systemd hardening from ubi10-core. Foundation for all web-serving CrunchTools images.
+This file holds what is specific to ubi10-httpd. The fleet rules and the Container
+Image profile (license, versioning, LABELs, the RHSM secret-mount pattern,
+systemd conventions, registry, testing and quality gates) apply at the
+inherited version and are checked against this repo's files by
+`constitution.yml`. They are not restated here.
 
----
+## Purpose
 
-## License
+Tier 1 of the layered UBI 10 image tree: Apache httpd on ubi10-core, the
+foundation for every web-serving crunchtools image. Published as
+`quay.io/crunchtools/ubi10-httpd`.
 
-AGPL-3.0-or-later
+## Parent Image
 
-## Versioning
+`quay.io/crunchtools/ubi10-core:latest`. It inherits the troubleshooting
+tools, rsyslog forwarding, masked services, `STOPSIGNAL` and `/sbin/init`
+entrypoint. httpd is in the UBI repos; no RHSM registration.
 
-Follow Semantic Versioning 2.0.0. MAJOR/MINOR/PATCH.
+## Packages and Services
 
-## Base Image
+- **Packages:** httpd.
+- **Enabled:** httpd, with a `Restart=on-failure` drop-in
+  (`config/httpd-restart.conf`).
+- **Port:** 80 (`EXPOSE 80`).
 
-`quay.io/crunchtools/ubi10-core:latest` — inherits troubleshooting tools (iputils, bind-utils, net-tools, less), cron, procps-ng, diffutils, and systemd hardening.
+## Smoke Test Coverage
 
-## Registry
-
-Published to `quay.io/crunchtools/ubi10-httpd`.
-
-## RHSM Registration
-
-Not required. httpd is available in UBI repos.
-
-## Containerfile Conventions
-
-- Uses `Containerfile` (not Dockerfile)
-- Required LABELs: `maintainer`, `description`
-- `dnf install -y` followed by `dnf clean all`
-- No RHSM registration needed
-- systemd services enabled: httpd
-- Inherits masked services from ubi10-core: systemd-remount-fs, systemd-update-done, systemd-udev-trigger
-- Inherits `STOPSIGNAL SIGRTMIN+3` and `ENTRYPOINT ["/sbin/init"]` from ubi10-core
-
-## Packages Installed
-
-httpd
-
-Inherited from ubi10-core: iputils, bind-utils, net-tools, less, cronie, procps-ng, diffutils
-
-## Testing
-
-- **Build test**: CI builds the image on every push to main/master
-- **Smoke tests**: httpd active, serves content on port 80, inherited package integrity (7 core packages), inherited masked services (3)
-- **Security scan**: Recommended (not yet implemented)
-
-## Quality Gates
-
-1. Build — CI builds the Containerfile successfully
-2. Test — smoke tests pass (httpd up, serves content, inherited packages present, services masked)
-3. Push — image published only after tests pass
-4. Weekly rebuild — cron job picks up base image updates every Monday 4:15 AM UTC
+`tests/smoke-test.sh` asserts httpd is active and serves content on port 80, and that the
+inherited ubi10-core packages and masked services are still in place.
 
 ## Downstream Images
 
-ubi10-httpd-php, ubi10-httpd-perl, proxy (direct children). Changes cascade via repository_dispatch.
+Build dispatches `parent-image-updated` to ubi10-httpd-php, ubi10-httpd-perl,
+proxy and nagios.
+
+## History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0.0 | 2026-03-10 | Initial constitution, tier 1 of the layered image tree |
+| 1.0.1 | 2026-09-25 | Gatehouse review, triage and pre-commit gates |
+| 1.1.0 | 2026-10-02 | Manifest under constitution v1.18.0: profile restatement removed, image specifics kept |
